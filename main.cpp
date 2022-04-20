@@ -12,6 +12,9 @@ const int PASSLENGTH = 5;
 const int NAMELENGTH = 20;
 const int TEXTLENGTH = 70;
 
+//LOGIN OPTIONS PROTOTYPES
+int LOG1(char owner[]) ;
+
 struct UserInfo{
     char username[NAMELENGTH] ;
     char email[NAMELENGTH] ;
@@ -28,7 +31,7 @@ struct Login{
 };
 
 struct retstatus{
-    int userid ;
+    long userid ;
     int status ;
 };
 
@@ -39,9 +42,10 @@ struct question{
 
 Login LOGinput ;
 retstatus STATUS ; //status and userid
+question QUES ;
 
    //checker function for the username signup
-   int checker(char holder[] ){
+   retstatus checker(char holder[] ){
 
        int holdercnt = 0 ;
        for(int i = 0 ; i < NAMELENGTH ; i++){
@@ -92,16 +96,20 @@ retstatus STATUS ; //status and userid
            }
            //cout << "final cnt : " << finalcnt << endl;
            if(checkcnt == finalcnt){
-               return 1 ;
+               STATUS.status = 1;
+               STATUS.userid = pos ;
+               return STATUS ;
            }
        }
-    return 2 ;
+    STATUS.status = 2 ;
+    STATUS.userid = pos ;
+    return STATUS ;
    }
 
 
    //checker function for the username signup
 
-   int logchecker(char holder[] , char passholder[]){
+   retstatus logchecker(char holder[] , char passholder[]){
 
        int holdercnt = 0 ;
        for(int i = 0 ; i < NAMELENGTH ; i++){
@@ -121,11 +129,11 @@ retstatus STATUS ; //status and userid
        checkercounter.close() ;
 
 
+       long pos = 0;
        for(int userindex = 0 ; userindex < userid ; userindex++){
 
            fstream streamchecker("userdata.txt" , ios::binary | ios::in);
            //cout << "userindex : " << userindex << endl;
-           long pos = 0;
            pos = ( userindex * sizeof(USERcheck) ) ;
            //cout << "pos : " << pos << endl;
            streamchecker.seekg(pos,ios::beg);
@@ -163,25 +171,29 @@ retstatus STATUS ; //status and userid
 
            //cout << "final cnt : " << finalcnt << endl;
            if( ( checkcnt == finalcnt ) && ( passstate == 0 ) ){
-               return 3;
+               STATUS.status = 3 ;
+               STATUS.userid = pos ;
+               return STATUS;
            }
        }
-       return 4 ;
+       STATUS.status = 4 ;
+       STATUS.userid = pos ;
+       return STATUS ;
    }
 
 
 
 struct Welcome{
 
-    int signup(){
+    retstatus signup(){
 
         fstream userdatastream ;
 
 
         cout << "Enter your Username         : " ;
-        cin.getline(USERinput.username,15);
-        int status = checker(USERinput.username);
-        if(status == 1){
+        cin.getline(USERinput.username,NAMELENGTH);
+        retstatus status = checker(USERinput.username);
+        if(status.status == 1){
             cout << "USER NAME IS ALREADY USED" << endl;
             cout << "BACK TO STARTUP" << endl;
             cout << "SIGN UP FAILED" << endl;
@@ -214,13 +226,14 @@ struct Welcome{
         userdatastream.close();
         cout << "SIGN UP DONE COMPLETELY" << endl;
          //signup done completely
-        return 2 ;
+        status.status = 2 ;
+        return status ;
 
         cout << "------------------------------------------------" << endl;
     }
 
 
-    int login(){
+    retstatus login(){
         cout << "------ LOG IN PAGE ------" << endl;
         cout << "USERNAME : " ;
         cin.getline(LOGinput.username , NAMELENGTH);
@@ -230,20 +243,22 @@ struct Welcome{
         }
         cout << endl;
 
-        int status = logchecker(LOGinput.username , LOGinput.pass);
-        if(status == 3){
+        retstatus status = logchecker(LOGinput.username , LOGinput.pass);
+        if(status.status == 3){
             cout << "login done completely" << endl;
-            return 3 ;
-        }else if(status == 4){
+            status.status = 3 ;
+            return status ;
+        }else if(status.status == 4){
             cout << "wrong either in username or password" << endl;
-            return 4 ;
+            status.status = 4 ;
+            return status ;
         }
     }
 };
 Welcome Session ;
 
 
-int startup(){
+retstatus startup(){
     char MMCHOICE ;
 
     cout << "--------------Welcome to neighbours forum--------------" << "\n \n" ;
@@ -258,7 +273,7 @@ int startup(){
         cin.ignore();
     }
 
-    int MMstatus  ;
+    retstatus MMstatus  ;
     switch(MMCHOICE){
         case('2'):
             system("cls");
@@ -275,18 +290,102 @@ int startup(){
 }
 
 
+int LOGmenu(retstatus LOGstruct){
+    system("cls");
+    //LOGstream will bring the name of the user that is logged in rn ;
+    fstream LOGstream("userdata.txt" , ios::binary | ios::in) ;
+    LOGstream.seekg(LOGstruct.userid,ios::beg);
+    LOGstream.read(reinterpret_cast<char*>(&USERcheck), sizeof(USERcheck));
+    cout << "Welcom,Mr." << USERcheck.username << endl;
+    LOGstream.close();
+    cout << "CHOOSE THE OPERATION YOU WANT TO MAKE" << endl;
+    cout << "1 : ASK A QUESTION TO USER\n"
+         << "2 : ANSWER QUESTIONS ASKED TO ME\n"
+         << "3 : DELETE A QUESTION YOU ASKED\n" ;
+
+    char LOGMMCHOICE ;
+    LOGMMCHOICE = cin.get();
+    cin.ignore();
+
+    switch(LOGMMCHOICE){
+        case('1'):
+            system("cls");
+            cout << "~ ASKING A QUESTION MENU ~" << endl;
+            int status = LOG1(USERcheck.username);
+            if(status == 2){
+                cout << "USER NOT FOUND." << endl;
+                return 1;
+            }
+
+            break ;
+    }
+
+}
+
+retstatus LOG1struct;
+int LOG1(char owner[]){
+
+    //now make a string called ownerQUES.txt
+    string ownerques = owner ;
+    ownerques += "ques.txt" ;
+
+    char ownerraw[NAMELENGTH] ;
+    for(int i = 0 ; i < NAMELENGTH ; i++){
+        ownerraw[i] = owner[i] ;
+    }
+
+    //it will take the user name of the user we want to ask
+    //and check if this user exists or not
+    cout << "ENTER THE USERNAME OF THE USER YOU WANT TO ASK AND AFTER THAT THE QUESTION" << endl;
+    cout << "USERNAME : " ;
+
+    cin.getline(QUES.username,NAMELENGTH);
+    LOG1struct = checker(QUES.username);
+    if(LOG1struct.status == 2){
+        return 2; // this means that when asking question the username is not found
+    }
+    cout << "QUESTION : " ;
+    cin.getline(QUES.text,TEXTLENGTH);
+
+    //first we want to bring the name of the user asked to
+    fstream LOG1("datasource.txt" , ios::binary | ios::in);
+    LOG1.seekg(LOG1struct.userid,ios::beg);
+    LOG1.read(reinterpret_cast<char*>(&USERcheck),sizeof(USERcheck));
+    LOG1.close();
+
+    //now make a string called askedtoASK.txt
+    string askedto = USERcheck.username ;
+    askedto += "ask.txt" ;
+
+
+    //we want to output in the ownerques file the name of the user asked to and the question
+    LOG1.open(ownerques, ios::binary | ios::out | ios::app);
+    LOG1.write(reinterpret_cast<char*>(&QUES),sizeof(QUES));
+    LOG1.close();
+
+    //we want to output in the askedtoASK file the name of the user asked and the question
+    for(int i = 0 ; i < NAMELENGTH ; i++){
+        QUES.username[i] = ownerraw[i] ;
+    }
+    LOG1.open(askedto, ios::binary | ios::out | ios::app);
+    LOG1.write(reinterpret_cast<char*>(&QUES),sizeof(QUES));
+    LOG1.close() ;
+}
+
+
 
 
 int main(){
 
-int status ;
+retstatus status ;
 //1.sign up failed   ,  2.sign up success , 3.login success , 4.login failed
 do{
     status = startup();
-}while( ( status !=  3) );
+}while( ( status.status !=  3) );
 //if signup is done then go to main menu until it return login signal
 
-
+int LOGsignal ;
+LOGsignal = LOGmenu(status);
 
 
 
