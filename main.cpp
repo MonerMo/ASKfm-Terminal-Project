@@ -44,7 +44,7 @@ struct question{
     char username[NAMELENGTH];
     char text[TEXTLENGTH];
     char anonymous ; //this is the state of the question if anonymous or not
-    char answered ; // to tell if the question is answered or not
+    bool answered ; // to tell if the question is answered or not
     int quesID ;
 };
 
@@ -55,11 +55,12 @@ question QUES ;
    //checker function for the username signup
    retstatus checker(char holder[]){
 
-       int holdercnt = 0 ;
+       string HOLDER = holder ;
+       /*int holdercnt = 0 ;
        for(int i = 0 ; i < NAMELENGTH ; i++){
            if( ( holder[i] >= 'a' && holder[i] <= 'z' ) || ( holder[i] >= 'A' && holder[i] <= 'Z' ) )
                holdercnt++;
-       }
+       }*/
 
        /*for(int i = 0 ; i < NAMELENGTH ; i++) {
            cout << holder[i] ;
@@ -87,23 +88,26 @@ question QUES ;
 
            //bring the length of holder and bring the length of USERcheck.username
            int checkcnt = 0 ;
-           for(int i = 0 ; i < NAMELENGTH ; i++){
+           /*for(int i = 0 ; i < NAMELENGTH ; i++){
                if( ( USERcheck.username[i] >= 'a' && USERcheck.username[i] <= 'z' ) || ( USERcheck.username[i] >= 'A' && USERcheck.username[i] <= 'Z' ) )
                    checkcnt++ ;
-           }
+           }*/
 
            //cout << "holder : " << holdercnt << " user check : " << checkcnt << endl;
            //if equal length and equal characters equal to the number of the characters then return 1
            int finalcnt = 0 ;
-           if(checkcnt == holdercnt){
+
+           /*if(checkcnt == holdercnt){
                for(int i = 0 ; i < checkcnt ; i++){
                    if(holder[i] == USERcheck.username[i]){
                        finalcnt++;
                    }
                }
-           }
+           }*/
+
            //cout << "final cnt : " << finalcnt << endl;
-           if(checkcnt == finalcnt){
+           string COMPARE = USERcheck.username;
+           if(HOLDER == COMPARE){
                STATUS.status = 1;
                STATUS.userid = pos ;
                STATUS.anonymousstatus = USERcheck.anonymousacc ;
@@ -121,13 +125,8 @@ question QUES ;
 
    retstatus logchecker(char holder[] , char passholder[]){
 
-       int holdercnt = 0 ;
-       for(int i = 0 ; i < NAMELENGTH ; i++){
-           if( ( holder[i] >= 'a' && holder[i] <= 'z' ) || ( holder[i] >= 'A' && holder[i] <= 'Z' ) )
-               holdercnt++;
-       }
 
-      /* for(int i = 0 ; i < NAMELENGTH ; i++) {
+       /*for(int i = 0 ; i < holdercnt ; i++) {
            cout << holder[i] ;
        }
        cout << endl;*/
@@ -137,6 +136,7 @@ question QUES ;
        int userid = checkercounter.tellp() / sizeof(USERinput) ;
        //cout << "userid : " << userid << endl;
        checkercounter.close() ;
+       string HOLDER = holder ;
 
 
        long pos = 0;
@@ -153,22 +153,23 @@ question QUES ;
 
 
            //bring the length of holder and bring the length of USERcheck.username
-           int checkcnt = 0 ;
+
+           /*int checkcnt = 0 ;
            for(int i = 0 ; i < NAMELENGTH ; i++){
                if( ( USERcheck.username[i] >= 'a' && USERcheck.username[i] <= 'z' ) || ( USERcheck.username[i] >= 'A' && USERcheck.username[i] <= 'Z' ) )
                    checkcnt++ ;
-           }
+           }*/
 
            //cout << "holder : " << holdercnt << " user check : " << checkcnt << endl;
            //if equal length and equal characters equal to the number of the characters then return 1
            int finalcnt = 0 ;
-           if(checkcnt == holdercnt){
+          /* if(checkcnt == (holdercnt)){
                for(int i = 0 ; i < checkcnt ; i++){
                    if(holder[i] == USERcheck.username[i]){
                        finalcnt++;
                    }
                }
-           }
+           }*/
 
            int passstate = 0 ;
            for(int i = 0 ; i < PASSLENGTH ; i++){
@@ -177,10 +178,13 @@ question QUES ;
                    break ;
                }
            }
-
+           string COMPARE = USERcheck.username ;
+           if(HOLDER == COMPARE){
+               finalcnt = 1 ;
+           }
 
            //cout << "final cnt : " << finalcnt << endl;
-           if( ( checkcnt == finalcnt ) && ( passstate == 0 ) ){
+           if( ( finalcnt == 1 ) && ( passstate == 0 ) ){
                STATUS.status = 3 ;
                STATUS.userid = pos ;
                return STATUS;
@@ -199,10 +203,18 @@ struct Welcome{
 
         fstream userdatastream ;
 
-
+        retstatus status ;
+        cout << "[0]Back to main menu." << endl;
+        cout << "----------------------" << endl;
         cout << "Enter your Username         : " ;
         cin.getline(USERinput.username,NAMELENGTH);
-        retstatus status = checker(USERinput.username);
+        //we want to make a back choice here
+        //we will make the user input 0 and return 99 as a back signal
+        if(USERinput.username[0] == '0'){
+            status.status = 9 ;
+            return  status ;
+        }
+        status = checker(USERinput.username);
         if(status.status == 1){
             cout << "USER NAME IS ALREADY USED" << endl;
             cout << "BACK TO STARTUP" << endl;
@@ -249,16 +261,23 @@ struct Welcome{
 
 
     retstatus login(){
+        retstatus status ;
         cout << "------ LOG IN PAGE ------" << endl;
+        cout << "[0]Back to main menu." << endl;
+        cout << "-------------------------" << endl;
         cout << "USERNAME : " ;
         cin.getline(LOGinput.username , NAMELENGTH);
+        if(LOGinput.username[0] == '0'){
+            status.status = 9 ;
+            return status ;
+        }
         cout << "PASSWORD : " ;
         for(int i = 0 ; i < PASSLENGTH ; i++){
             LOGinput.pass[i] = _getch(); _putch('*');
         }
         cout << endl;
 
-        retstatus status = logchecker(LOGinput.username , LOGinput.pass);
+        status = logchecker(LOGinput.username , LOGinput.pass);
         if(status.status == 3){
             cout << "login done completely" << endl;
             firstlogin = true ;
@@ -278,27 +297,30 @@ retstatus startup(){
     char MMCHOICE ;
 
     cout << "--------------Welcome to neighbours forum--------------" << "\n \n" ;
-    cout << "1:SIGN UP" << "\n" << "2:LOG IN" << "\n" ;
-    cout << "Enter 1 or 2 depend on your choice : " ;
+    cout << "1:SIGN UP" << "\n" << "2:LOG IN" << "\n" << "3:TERMINATE PROGRAM" << "\n" ;
+    cout << "Enter 1 , 2 or 3 depend on your choice : " ;
     cin.get(MMCHOICE);
-    cin.ignore();
+    cin.ignore(100,'\n');
 
-    while( ( MMCHOICE != '1' ) && ( MMCHOICE != '2') ){
+    while( ( MMCHOICE != '1' ) && ( MMCHOICE != '2') && ( MMCHOICE != '3' )){
         cout << "Please Enter a valid input : " ;
         cin.get(MMCHOICE);
-        cin.ignore();
+        cin.ignore(100 , '\n');
     }
 
     retstatus MMstatus  ;
     switch(MMCHOICE){
+        case('3'):
+            exit(0);
+            break;
         case('2'):
             system("cls");
-            cout << "~TAKING YOU TO LOG IN PAGE ~\n" ;
+            cout << "~ TAKING YOU TO LOG IN PAGE ~\n" ;
             MMstatus = Session.login();
             break;
         case('1'):
             system("cls");
-            cout << "~ TAKING YOU TO SIGN UP PAGE ~ \n";
+            cout << "~ TAKING YOU TO SIGN UP PAGE ~\n";
             MMstatus = Session.signup();
             break;
     }
@@ -307,7 +329,7 @@ retstatus startup(){
 
 
 int LOGmenu(retstatus LOGstruct){
-    system("cls");
+    //system("cls");
     //LOGstream will bring the name of the user that is logged in rn ;
     fstream LOGstream("userdata.txt" , ios::binary | ios::in) ;
     LOGstream.seekg(LOGstruct.userid,ios::beg);
@@ -322,28 +344,61 @@ int LOGmenu(retstatus LOGstruct){
         }
     }
     cout << "CHOOSE THE OPERATION YOU WANT TO MAKE" << endl;
-    cout << "1 : ASK A QUESTION TO USER.\n"
+    cout << "0 : LOG OUT.\n"
+         << "1 : ASK A QUESTION TO USER.\n"
          << "2 : ANSWER QUESTIONS ASKED TO ME.\n"
          << "3 : DELETE A QUESTION YOU ASKED.\n" ;
 
+    int signal ;
     char LOGMMCHOICE ;
     LOGMMCHOICE = cin.get();
-    cin.ignore();
+    cin.ignore(100,'\n');
+    while( (LOGMMCHOICE != '0') && (LOGMMCHOICE != '1') && (LOGMMCHOICE != '2') ){
+        cout << "PLEASE ENTER A VALID INPUT : " ;
+        LOGMMCHOICE = cin.get();
+        cin.ignore(100,'\n');
+    }
 
+    //we want to add log out and back to main menu here
     switch(LOGMMCHOICE){
+        case('0'):
+            system("cls");
+            cout << "~ LOGGING OUT AND BACK TO MAIN MENU ~" << endl;
+            return 9 ;
+            break;
+
         case('2'):
             system("cls");
             cout << "~ ANSWERING QUESTIONS MENU ~" << endl;
-            LOG2(USERcheck.username);
-            break;
+            //if the return signal is 22 then we will move back to the question answer menu
+            do{
+                signal = LOG2(USERcheck.username);
+            }while(signal == 22);
+
+            if(signal == 20){
+                cout << "BACK TO OPERATION MENU." << endl;
+                return signal ;
+            }else if(signal == 21){
+                cout << "NO QUESTIONS FOUND." << endl;
+                return signal ;
+            }else if(signal == 23){
+                cout << "ANSWERING DONE COMPLETELY." << endl;
+                return signal ;
+            }
 
         case('1'):
             system("cls");
             cout << "~ ASKING A QUESTION MENU ~" << endl;
-            int status = LOG1(usernameholder);
-            if(status == 2){
-                cout << "USER NOT FOUND." << endl;
-                return 1;
+            signal = LOG1(usernameholder);
+            if(signal == 10){
+                cout << "BACK TO OPERATION MENU." << endl;
+                return signal ;
+            }else if(signal == 11){
+                cout << "USER YOU ARE ASKING NOT FOUND." << endl;
+                return signal ;
+            }else if(signal == 12){
+                cout << "QUESTION ASKED COMPLETE." << endl;
+                return signal ;
             }
             break ;
     }
@@ -360,13 +415,20 @@ int LOG1(char owner[]){
 
     //it will take the user name of the user we want to ask
     //and check if this user exists or not
+    cout << "[0]Back to operation menu." << endl;
+    cout << "--------------------------" << endl;
     cout << "ENTER THE USERNAME OF THE USER YOU WANT TO ASK AND AFTER THAT THE QUESTION" << endl;
     cout << "USERNAME : " ;
-
     cin.getline(QUES.username,NAMELENGTH);
+
+    //give the option if the user want to go back to the operation menu
+    if(QUES.username[0] == '0'){
+        return 10;
+    }
+
     LOG1struct = checker(QUES.username);
     if(LOG1struct.status == 2){
-        return 2; // this means that when asking question the username is not found
+        return 11; // this means that when asking question the username is not found
     }
 
     //after getting the username, and it exists in the text file
@@ -378,6 +440,7 @@ int LOG1(char owner[]){
         cin.ignore();
     }else if(LOG1struct.anonymousstatus == 'n' || LOG1struct.anonymousstatus == 'N'){
         cout << "USER DOESN'T ACCEPT ANONYMOUS QUESTIONS." << endl;
+        QUES.anonymous = 'y' ;
     }
     //so when we want to show a question we will check the anonymous char
     //if it is 1 we will output Anonymous : question content . if 0 we will output the username
@@ -419,6 +482,7 @@ int LOG1(char owner[]){
     LOG1.open(askedto, ios::binary | ios::out | ios::app);
     LOG1.write(reinterpret_cast<char*>(&QUES),sizeof(QUES));
     LOG1.close() ;
+    return 12;
 }
 
 
@@ -433,15 +497,25 @@ int LOG2(char owner[]){
     int quescounter = 0 ;
     LOG2.seekg(0L , ios::end) ;
     quescounter = LOG2.tellg() / sizeof(QUES) ;
+
+    int sizechecker = LOG2.tellg();
+
+    if(sizechecker == -1){
+        cout << "NO QUESTIONS FOUND." << endl;
+        return 21 ;
+    }
+
     //cout << "quescounter : " << quescounter << endl;
 
     //this will show the questions first
     LOG2.seekg(0L , ios::beg);
+    cout << "--------------------------" << endl;
     for(int i = 0 ; i < quescounter ; i++){
             long pos = ( i * (sizeof(QUES)) ) ;
             LOG2.seekg(pos , ios::beg);
             LOG2.read(reinterpret_cast<char*>(&QUES),sizeof(QUES));
             //check anonymous
+            //cout << "anon : " << QUES.anonymous << endl;
             if(QUES.anonymous == 'y' || QUES.anonymous == 'Y'){
                 cout << "Question ID:" << QUES.quesID << endl;
                 cout << "Asked By:Anonymous to " << forshow << endl;
@@ -455,72 +529,101 @@ int LOG2(char owner[]){
 
     //after that the user will choose the number of the question he wants to answer
     //adding a back button here for 99 value (in the future)
-    cout << "Enter the number of the question you want to answer : " ;
-    int quesNUM ;
-    cin >> quesNUM ;
-    cin.ignore();
-    while(quesNUM > quescounter || quesNUM < 0){
+    cout << "------- [B]ack to operation menu or [C]ontinue -------" << endl;
+    cout << "------------------------------------------------------" << endl;
+    char flow = cin.get();
+    cin.ignore(100 , '\n');
+
+    while((flow != 'b') && ( flow != 'B') && (flow != 'c' ) && ( flow != 'C')){
         cout << "ENTER A VALID INPUT : " ;
+        flow = cin.get();
+        cin.ignore(100 , '\n') ;
+    }
+
+    if(flow == 'b' || flow == 'B'){
+        return 20;
+    }else if(flow == 'c' || flow == 'C'){
+
+        cout << "Enter the number of the question you want to answer : " ;
+        int quesNUM ;
         cin >> quesNUM ;
-    }
-    //now after knowing the number of the question we will get it again on the screen and let him put the answer
+        cin.ignore(100,'\n');
+        while(quesNUM >= quescounter || quesNUM < 0){
+            cout << "ENTER A VALID INPUT : " ;
+            cin >> quesNUM ;
+            cin.ignore(100,'\n');
+        }
+        //now after knowing the number of the question we will get it again on the screen and let him put the answer
 
-    system("cls");
-    long pos = ( quesNUM * (sizeof(QUES)) ) ;
-    LOG2.seekg(pos ,ios::beg);
-    LOG2.read(reinterpret_cast<char*>(&QUES) ,sizeof(QUES));
-    if(QUES.anonymous == 'y' || QUES.anonymous == 'Y'){
-        cout << "Asked By:Anonymous" << endl;
-    }else{
-        cout << "Asked By:" << QUES.username << endl;
-    }
-    cout << quesNUM << ")Question:" << QUES.text << endl;
-    LOG2.close();
+        system("cls");
+        cout << "[0] Back to questions menu." << endl;
+        cout << "-------------------------" << endl;
+        long pos = ( quesNUM * (sizeof(QUES)) ) ;
+        LOG2.seekg(pos ,ios::beg);
+        LOG2.read(reinterpret_cast<char*>(&QUES) ,sizeof(QUES));
+        if(QUES.anonymous == 'y' || QUES.anonymous == 'Y'){
+            cout << "Asked By:Anonymous" << endl;
+        }else{
+            cout << "Asked By:" << QUES.username << endl;
+        }
+        cout << quesNUM << ")Question:" << QUES.text << endl;
+        LOG2.close();
 
-    //answer file name : quesIDans.txt ;
-    int quesID = QUES.quesID;
+        //answer file name : quesIDans.txt ;
+        int quesID = QUES.quesID;
 
-    int counter = 0 ;
-    //number of characters of the quesID
-    for(;quesID > 0;){
-        quesID % 10 ;
-        quesID /= 10 ;
-        counter ++ ;
-    }
+        int counter = 0 ;
+        //number of characters of the quesID
+        for(;quesID > 0;){
+            quesID % 10 ;
+            quesID /= 10 ;
+            counter ++ ;
+        }
 
-    quesID = QUES.quesID ;
-    char ID[counter] ;
-    //getting the quesID but in characters
-    for(int i = 0 ; i < counter ; i++){
+        quesID = QUES.quesID ;
+        char ID[counter] ;
+        //getting the quesID but in characters
+        for(int i = 0 ; i < counter ; i++){
             ID[i] = '0' + int(quesID % 10);
             quesID /= 10 ;
+        }
+
+        //reverse the array
+        for(int i = 0 ; i < counter ; i++){
+            char holder ;
+            holder = ID[i] ;
+            ID[i] = ID[counter-1-i] ;
+            ID[counter - 1 - i] = holder ;
+            if(i == (counter-1-i))
+                break;
+        }
+        string answerfile ;
+        for(int i = 0 ; i < counter ; i++){
+            answerfile += ID[i] ;
+        }
+
+        answerfile += "ans.txt" ;
+
+        //taking and outputting the answer
+        cout << "Answer:" ;
+        string answer ;
+        getline(cin , answer);
+        if(answer[0] == '0'){
+            return 22;
+        }
+
+        LOG2.open(answerfile, ios::out | ios::app);
+        LOG2 << answer << endl;
+        LOG2.close();
+
+        //setting the answered bit to true ( ANSWERED )
+        LOG2.open(ownerques , ios::binary | ios::out | ios::app);
+        LOG2.seekg(pos,ios::beg);
+        QUES.answered = true ;
+        LOG2.write(reinterpret_cast<char*>(&QUES),sizeof(QUES));
+        LOG2.close();
+        return 23;
     }
-
-    //reverse the array
-    for(int i = 0 ; i < counter ; i++){
-        char holder ;
-        holder = ID[i] ;
-        ID[i] = ID[counter-1-i] ;
-        ID[counter - 1 - i] = holder ;
-        if(i == (counter-1-i))
-            break;
-    }
-    string answerfile ;
-    for(int i = 0 ; i < counter ; i++){
-        answerfile += ID[i] ;
-    }
-
-    answerfile += "ans.txt" ;
-
-    //taking and outputting the answer
-    cout << "Answer:" ;
-    string answer ;
-    getline(cin , answer);
-
-    LOG2.open(answerfile, ios::out | ios::app);
-    LOG2 << answer << endl;
-    LOG2.close();
-
 }
 
 
@@ -528,15 +631,24 @@ int LOG2(char owner[]){
 
 int main(){
 
+//the flow signals
+
 retstatus status ;
 //1.sign up failed   ,  2.sign up success , 3.login success , 4.login failed
-do{
-    status = startup();
-}while( ( status.status !=  3) );
-//if signup is done then go to main menu until it return login signal
 
-int LOGsignal ;
-LOGsignal = LOGmenu(status);
+for(;;){
+    do{
+        status = startup();
+    }while( ( status.status != 3 ) ) ;
+
+    int LOGsignal ;
+    do{
+        LOGsignal = LOGmenu(status);
+    }while( (LOGsignal != 9) ) ;
+}
+
+
+
 
 
 
