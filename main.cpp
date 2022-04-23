@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include <conio.h>
+#include <cstdio>
 
 using namespace std ;
 
@@ -11,11 +12,13 @@ using namespace std ;
 const int PASSLENGTH = 5;
 const int NAMELENGTH = 20;
 const int TEXTLENGTH = 70;
+const int OLDFILESIZE = 100;
 
 //LOGIN OPTIONS PROTOTYPES
 static bool firstlogin ;
 int LOG1(char owner[]) ;
 int LOG2(char owner[]) ;
+int LOG3(char owner[]) ;
 
 struct UserInfo{
     char username[NAMELENGTH] ;
@@ -353,7 +356,7 @@ int LOGmenu(retstatus LOGstruct){
     char LOGMMCHOICE ;
     LOGMMCHOICE = cin.get();
     cin.ignore(100,'\n');
-    while( (LOGMMCHOICE != '0') && (LOGMMCHOICE != '1') && (LOGMMCHOICE != '2') ){
+    while( (LOGMMCHOICE != '0') && (LOGMMCHOICE != '1') && (LOGMMCHOICE != '2') && (LOGMMCHOICE != '3')){
         cout << "PLEASE ENTER A VALID INPUT : " ;
         LOGMMCHOICE = cin.get();
         cin.ignore(100,'\n');
@@ -361,6 +364,13 @@ int LOGmenu(retstatus LOGstruct){
 
     //we want to add log out and back to main menu here
     switch(LOGMMCHOICE){
+        case('3'):
+            system("cls");
+            cout << "~ DELETING QUESTION MENU ~" << endl;
+            signal = LOG3(USERcheck.username);
+            return signal ;
+            break;
+
         case('0'):
             system("cls");
             cout << "~ LOGGING OUT AND BACK TO MAIN MENU ~" << endl;
@@ -440,7 +450,7 @@ int LOG1(char owner[]){
         cin.ignore();
     }else if(LOG1struct.anonymousstatus == 'n' || LOG1struct.anonymousstatus == 'N'){
         cout << "USER DOESN'T ACCEPT ANONYMOUS QUESTIONS." << endl;
-        QUES.anonymous = 'y' ;
+        QUES.anonymous = 'n' ;
     }
     //so when we want to show a question we will check the anonymous char
     //if it is 1 we will output Anonymous : question content . if 0 we will output the username
@@ -626,6 +636,110 @@ int LOG2(char owner[]){
     }
 }
 
+
+int LOG3(char owner[]){
+    //we will open the file of the questions asked by the user
+    //ownerques.txt file
+    //after that show all the questions
+    //we should check the number of the questions to limit the input of the user
+    //then let the user enter the number of the question he wants to delete
+    //first we will make a temporary file for all the question we have except the question he wants to delete
+    //after that delete the old file
+    //then rename the new temporary file with the same old name
+
+    cout << "--------------------------" << endl;
+    string OWNER = owner ;
+    int ownersize = OWNER.length();
+    string forshow = owner ;
+    OWNER += "ques.txt" ;
+
+    fstream LOG3(OWNER,ios::binary | ios::in);
+
+    int quescounter = 0 ; //number of questions
+    LOG3.seekg(0L , ios::end) ;
+    quescounter = LOG3.tellg() / sizeof(QUES) ;
+    int filesize = LOG3.tellg();
+    cout << "file size : " << filesize << endl;
+    if(filesize == -1 || filesize == 0){//this means that there are no questions
+        return 31 ;
+    }
+
+    //showing all questions.
+    LOG3.seekg(0L , ios::beg);
+    cout << "--------------------------" << endl;
+    for(int i = 0 ; i < quescounter ; i++){
+        long pos = ( i * (sizeof(QUES)) ) ;
+        LOG3.seekg(pos , ios::beg);
+        LOG3.read(reinterpret_cast<char*>(&QUES),sizeof(QUES));
+        //check anonymous
+        //cout << "anon : " << QUES.anonymous << endl;
+        if(QUES.anonymous == 'y' || QUES.anonymous == 'Y'){
+            cout << "Question ID:" << QUES.quesID << endl;
+            cout << "Asked By:Anonymous to " << QUES.username << endl;
+        }else{
+            cout << "Question ID:" << QUES.quesID << endl;
+            cout << "Asked By:" << forshow << " to " << QUES.username << endl;
+        }
+        cout << i << ")Question:" << QUES.text << endl;
+        cout << "--------------------------" << endl;
+    }
+    LOG3.close();
+
+
+    //after that the user choose either to go back or input number
+    cout << "[-1] To go back to operations menu." << endl;
+    cout << "Enter the number of the question you want to delete : " ;
+    int choice ;
+    cin >> choice ;
+    cin.ignore(100,'\n');
+    while( (choice >= quescounter ) || ( (choice < 0) && (choice != -1) ) ){
+        cout << "ENTER A VALID INPUT : " ;
+        cin >> choice ;
+        cin.ignore(100,'\n');
+    }
+
+    if(choice == -1){
+        return 30;
+    }else{
+        //first we will make two stream objects one to input the data and the other to ouput it
+        string outfilename = "temp.txt" ;
+        char OUTFILENAME[] = "temp.txt" ;
+        fstream INPUT(OWNER, ios::binary | ios::in);
+        fstream OUTPUT(outfilename , ios::binary | ios::out | ios::app );
+
+        for(int i = 0 ; i < quescounter ; i++){
+            //we want to skip the question we want to delete
+            if(i == choice)
+                continue ;
+            long pos ;
+            pos = (i * (sizeof(QUES)));
+            INPUT.seekg(pos , ios::beg);
+            INPUT.read(reinterpret_cast<char*>(&QUES),sizeof(QUES));
+            OUTPUT.write(reinterpret_cast<char*>(&QUES),sizeof(QUES));
+        }
+        INPUT.close();
+        OUTPUT.close();
+
+        //then remove the old file
+        //the name of the old file should be an array
+        char OLDFILENAME[OLDFILESIZE] ;
+        for(int i = 0 ; i < ownersize ; i++){
+            OLDFILENAME[i] = OWNER[i] ;
+        }
+        OLDFILENAME[ownersize] = 'q';
+        OLDFILENAME[ownersize+1] = 'u';
+        OLDFILENAME[ownersize+2] = 'e';
+        OLDFILENAME[ownersize+3] = 's';
+        OLDFILENAME[ownersize+4] = '.';
+        OLDFILENAME[ownersize+5] = 't';
+        OLDFILENAME[ownersize+6] = 'x';
+        OLDFILENAME[ownersize+7] = 't';
+
+        remove(OLDFILENAME);
+        rename(OUTFILENAME,OLDFILENAME);
+    }
+    return 32;
+}
 
 
 
