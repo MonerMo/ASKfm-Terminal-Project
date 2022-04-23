@@ -18,7 +18,16 @@ const int OLDFILESIZE = 100;
 static bool firstlogin ;
 int LOG1(char owner[]) ;
 int LOG2(char owner[]) ;
-int LOG3(char owner[]) ;
+//void asked(int quesIDholder , string userNAMEholder , int userNAMEcounter , char userNAMEfile[]);
+struct LOG3ret{
+    string filename ;
+    int ID ;
+    int status ;
+};
+LOG3ret LOG3(char owner[]) ;
+LOG3ret s ;
+void askeddata(LOG3ret sholder);
+
 
 struct UserInfo{
     char username[NAMELENGTH] ;
@@ -362,12 +371,14 @@ int LOGmenu(retstatus LOGstruct){
         cin.ignore(100,'\n');
     }
 
+    LOG3ret LOGMM ;
     //we want to add log out and back to main menu here
     switch(LOGMMCHOICE){
         case('3'):
             system("cls");
             cout << "~ DELETING QUESTION MENU ~" << endl;
-            signal = LOG3(USERcheck.username);
+            LOGMM = LOG3(USERcheck.username);
+            askeddata(LOGMM);
             return signal ;
             break;
 
@@ -637,7 +648,8 @@ int LOG2(char owner[]){
 }
 
 
-int LOG3(char owner[]){
+
+LOG3ret LOG3(char owner[]){
     //we will open the file of the questions asked by the user
     //ownerques.txt file
     //after that show all the questions
@@ -661,7 +673,8 @@ int LOG3(char owner[]){
     int filesize = LOG3.tellg();
     cout << "file size : " << filesize << endl;
     if(filesize == -1 || filesize == 0){//this means that there are no questions
-        return 31 ;
+        s.status = 31;
+        return s ;
     }
 
     //showing all questions.
@@ -699,7 +712,8 @@ int LOG3(char owner[]){
     }
 
     if(choice == -1){
-        return 30;
+        s.status = 30 ;
+        return s;
     }else{
         //first we will make two stream objects one to input the data and the other to ouput it
         string outfilename = "temp.txt" ;
@@ -708,9 +722,19 @@ int LOG3(char owner[]){
         fstream OUTPUT(outfilename , ios::binary | ios::out | ios::app );
 
         for(int i = 0 ; i < quescounter ; i++){
+            cout << "entered for loop " << endl;
             //we want to skip the question we want to delete
-            if(i == choice)
+            //but first get the username of the person we asked
+            //and the length of his name
+            //and the question ID ;
+            if(i == choice){
+                long poss = (i * (sizeof(QUES)));
+                INPUT.seekg(poss , ios::beg);
+                INPUT.read(reinterpret_cast<char*>(&QUES),sizeof(QUES));
+                s.ID = QUES.quesID ;
+                s.filename = QUES.username ;
                 continue ;
+            }
             long pos ;
             pos = (i * (sizeof(QUES)));
             INPUT.seekg(pos , ios::beg);
@@ -734,13 +758,139 @@ int LOG3(char owner[]){
         OLDFILENAME[ownersize+5] = 't';
         OLDFILENAME[ownersize+6] = 'x';
         OLDFILENAME[ownersize+7] = 't';
-
-        remove(OLDFILENAME);
-        rename(OUTFILENAME,OLDFILENAME);
+        std::remove(OLDFILENAME);
+        std::rename(OUTFILENAME , OLDFILENAME);
     }
-    return 32;
+    return s;
 }
 
+
+
+
+
+void askeddata(LOG3ret sholder){
+
+    //---------------- for asked user file question removal -------
+    int quesIDholder = sholder.ID;
+    string userNAMEholder = sholder.filename;
+    int userNAMEcounter = userNAMEholder.length();
+    char userNAMEfile[OLDFILESIZE] = {};
+    userNAMEholder += "ask.txt";
+    string out = "tem.txt" ;
+    char OUT[] = "tem.txt" ;
+    // ------------------------------------------------------------
+
+    long pos ;
+    fstream askeddatastream(userNAMEholder , ios::in | ios::binary);
+    fstream outer(out, ios::out | ios::binary | ios::app);
+
+
+    int quescounter = 0 ;
+    askeddatastream.seekg(0L,ios::end);
+    quescounter = ( ( askeddatastream.tellg() ) / ( sizeof(QUES) ) );
+
+    for(int i = 0 ; i < quescounter ; i++){
+
+        pos = (i * (sizeof(QUES))) ;
+        askeddatastream.seekg(pos , ios::beg) ;
+        askeddatastream.read(reinterpret_cast<char*>(&QUES) , sizeof(QUES));
+
+        if(QUES.quesID == quesIDholder){
+            continue;
+        }
+
+        outer.write(reinterpret_cast<char*>(&QUES) , sizeof(QUES)) ;
+    }
+
+    for(int i = 0 ; i < userNAMEcounter ; i++){
+        userNAMEfile[i] = userNAMEholder[i] ;
+    }
+
+    int finalsize = userNAMEcounter + 7 ;
+    char finalarray[finalsize] ;
+
+    for(int i = 0 ; i < userNAMEcounter ; i++){
+        finalarray[i] = userNAMEfile[i] ;
+    }
+    finalarray[userNAMEcounter] = 'a' ;
+    finalarray[userNAMEcounter+1] = 's' ;
+    finalarray[userNAMEcounter+2] = 'k' ;
+    finalarray[userNAMEcounter+3] = '.' ;
+    finalarray[userNAMEcounter+4] = 't' ;
+    finalarray[userNAMEcounter+5] = 'x' ;
+    finalarray[userNAMEcounter+6] = 't' ;
+
+    /*for(char outputer : finalarray)
+        cout << outputer ;
+    cout << endl ;
+    for(char outputer : OUT)
+        cout << outputer ;
+    cout << endl;*/
+
+
+    askeddatastream.close();
+    outer.close();
+
+    std::remove(finalarray);
+    std::rename(OUT,finalarray);
+
+    //asked(quesIDholder , userNAMEholder , userNAMEcounter , userNAMEfile);
+
+}
+
+
+
+void asked(int quesIDholder , string userNAMEholder , int userNAMEcounter , char userNAMEfile[]){
+
+    fstream INPUT ;
+    fstream OUTPUT ;
+    int quescounter = 0 ;
+    char OUTFILENAMEE[] = "tem.txt" ;
+    string outfilenamee = "tem.txt" ;
+    string askedpersonfile = userNAMEholder ;
+    askedpersonfile += "ask.txt" ;
+    cout << "askedpersonfile : " << askedpersonfile << endl;
+    INPUT.open(askedpersonfile , ios::binary | ios::in );
+    OUTPUT.open(outfilenamee , ios::binary | ios::out | ios::app);
+    INPUT.seekg(0L , ios::end) ;
+    quescounter = INPUT.tellg() / sizeof(QUES) ;
+    cout << "quescounter : " << quescounter << endl;
+    INPUT.seekg(0L , ios::beg) ;
+    for(int i = 0 ; i < quescounter ; i++){
+        long pos = 0 ;
+        pos = ( i * (sizeof(QUES)) );
+        INPUT.seekg(pos , ios::beg);
+        INPUT.read(reinterpret_cast<char*>(&QUES) , sizeof(QUES));
+        if(QUES.quesID == quesIDholder)
+            continue;
+        OUTPUT.write(reinterpret_cast<char*>(&QUES) , sizeof(QUES));
+    }
+    //now we want to rename temp.txt and delete askeduserask.txt
+
+    int finalsize = userNAMEcounter + 7 ;
+    char finalarray[finalsize] ;
+
+    for(int i = 0 ; i < userNAMEcounter ; i++){
+        finalarray[i] = userNAMEfile[i] ;
+    }
+    finalarray[userNAMEcounter] = 'a' ;
+    finalarray[userNAMEcounter+1] = 's' ;
+    finalarray[userNAMEcounter+2] = 'k' ;
+    finalarray[userNAMEcounter+3] = '.' ;
+    finalarray[userNAMEcounter+4] = 't' ;
+    finalarray[userNAMEcounter+5] = 'x' ;
+    finalarray[userNAMEcounter+6] = 't' ;
+
+
+
+
+    INPUT.close();
+    OUTPUT.close();
+
+
+    std::remove(finalarray);
+    std::rename(OUTFILENAMEE,finalarray);
+}
 
 
 int main(){
