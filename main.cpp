@@ -24,9 +24,12 @@ struct LOG3ret{
     int ID ;
     int status ;
 };
+
+
 LOG3ret LOG3(char owner[]) ;
 LOG3ret s ;
 void askeddata(LOG3ret sholder);
+void answerdelete(int  ansID);
 
 
 struct UserInfo{
@@ -63,6 +66,7 @@ struct question{
 Login LOGinput ;
 retstatus STATUS ; //status and userid
 question QUES ;
+question QUESask;
 
    //checker function for the username signup
    retstatus checker(char holder[]){
@@ -228,14 +232,17 @@ struct Welcome{
         }
         status = checker(USERinput.username);
         if(status.status == 1){
+            system("cls");
+            cout << "-------------------------" << endl;
             cout << "USER NAME IS ALREADY USED" << endl;
             cout << "BACK TO STARTUP" << endl;
             cout << "SIGN UP FAILED" << endl;
             return status; //signup have and error return to main menu
         }else{
-            cout << "\n" ;
+
+            cout << "---------------------" << endl;
             cout << "USER NAME IS NOT USED" << endl;
-            cout << "\n" ;
+            cout << "---------------------" << endl;
         }
 
         //email
@@ -263,6 +270,8 @@ struct Welcome{
         userdatastream.open("userdata.txt" , ios::binary|ios::out|ios::app);
         userdatastream.write(reinterpret_cast<char*>(&USERinput),sizeof(USERinput));
         userdatastream.close();
+        system("cls");
+        cout << "-----------------------" << endl;
         cout << "SIGN UP DONE COMPLETELY" << endl;
          //signup done completely
         status.status = 2 ;
@@ -291,11 +300,16 @@ struct Welcome{
 
         status = logchecker(LOGinput.username , LOGinput.pass);
         if(status.status == 3){
+            system("cls");
+            cout << "---------------------" << endl;
             cout << "login done completely" << endl;
+            cout << "---------------------" << endl;
             firstlogin = true ;
             status.status = 3 ;
             return status ;
         }else if(status.status == 4){
+            system("cls");
+            cout << "------------------------------------" << endl;
             cout << "wrong either in username or password" << endl;
             status.status = 4 ;
             return status ;
@@ -307,6 +321,7 @@ Welcome Session ;
 
 retstatus startup(){
     char MMCHOICE ;
+
 
     cout << "--------------Welcome to neighbours forum--------------" << "\n \n" ;
     cout << "1:SIGN UP" << "\n" << "2:LOG IN" << "\n" << "3:TERMINATE PROGRAM" << "\n" ;
@@ -378,7 +393,28 @@ int LOGmenu(retstatus LOGstruct){
             system("cls");
             cout << "~ DELETING QUESTION MENU ~" << endl;
             LOGMM = LOG3(USERcheck.username);
-            askeddata(LOGMM);
+
+            if(LOGMM.status == 31){
+                system("cls");
+                cout << "---------------------------------" << endl;
+                cout << "THERE ARE NO QUESTIONS TO DELETE." << endl;
+                cout << "---------------------------------" << endl;
+            }else if(LOGMM.status == 30){
+                //system("cls");
+                cout << "----------------------" << endl;
+                cout << "BACK TO OPERATION MENU" << endl;
+                cout << "----------------------" << endl;
+            }else if(LOGMM.status == 32){
+                askeddata(LOGMM);
+                answerdelete(LOGMM.ID);
+                cout << "------------------------------" << endl;
+                cout << "QUESTION DELETED SUCCESSFULLY." << endl;
+                cout << "------------------------------" << endl;
+            }
+
+
+
+
             return signal ;
             break;
 
@@ -397,33 +433,56 @@ int LOGmenu(retstatus LOGstruct){
             }while(signal == 22);
 
             if(signal == 20){
+                cout << "-----------------------" << endl;
                 cout << "BACK TO OPERATION MENU." << endl;
+                cout << "-----------------------" << endl;
                 return signal ;
             }else if(signal == 21){
+                system("cls");
+                cout << "-------------------" << endl;
                 cout << "NO QUESTIONS FOUND." << endl;
+                cout << "-------------------" << endl;
                 return signal ;
             }else if(signal == 23){
+                system("cls");
+                cout << "--------------------------" << endl;
                 cout << "ANSWERING DONE COMPLETELY." << endl;
+                cout << "--------------------------" << endl;
                 return signal ;
             }
+            break ;
 
         case('1'):
             system("cls");
             cout << "~ ASKING A QUESTION MENU ~" << endl;
             signal = LOG1(usernameholder);
             if(signal == 10){
+                system("cls");
+                cout << "-----------------------" << endl;
                 cout << "BACK TO OPERATION MENU." << endl;
+                cout << "-----------------------" << endl;
                 return signal ;
             }else if(signal == 11){
+                system("cls");
+                cout << "------------------------------" << endl;
                 cout << "USER YOU ARE ASKING NOT FOUND." << endl;
+                cout << "------------------------------" << endl;
                 return signal ;
             }else if(signal == 12){
+                system("cls");
+                cout << "------------------------" << endl;
                 cout << "QUESTION ASKED COMPLETE." << endl;
+                cout << "------------------------" << endl;
+                return signal ;
+            }else if(signal == 13){
+                system("cls");
+                cout << "-----------------------" << endl;
+                cout << "YOU CAN'T ASK YOURSELF." << endl;
+                cout << "-----------------------" << endl;
                 return signal ;
             }
             break ;
     }
-
 }
 
 retstatus LOG1struct;
@@ -431,6 +490,8 @@ int LOG1(char owner[]){
 
     //now make a string called ownerQUES.txt
     string ownerques = owner ;
+    //string ownermain for not asking the logged in person ;
+    string ownermain = owner ;
     ownerques += "ques.txt" ;
 
 
@@ -441,10 +502,16 @@ int LOG1(char owner[]){
     cout << "ENTER THE USERNAME OF THE USER YOU WANT TO ASK AND AFTER THAT THE QUESTION" << endl;
     cout << "USERNAME : " ;
     cin.getline(QUES.username,NAMELENGTH);
+    //string ownercheck for not asking the looged in person ;
+    string ownercheck = QUES.username ;
 
     //give the option if the user want to go back to the operation menu
     if(QUES.username[0] == '0'){
         return 10;
+    }
+
+    if(ownercheck == ownermain){
+        return 13 ; // this means that the user is asking himself
     }
 
     LOG1struct = checker(QUES.username);
@@ -522,7 +589,6 @@ int LOG2(char owner[]){
     int sizechecker = LOG2.tellg();
 
     if(sizechecker == -1){
-        cout << "NO QUESTIONS FOUND." << endl;
         return 21 ;
     }
 
@@ -545,7 +611,52 @@ int LOG2(char owner[]){
                 cout << "Asked By:" << QUES.username << " to " << forshow << endl;
             }
             cout << i << ")Question:" << QUES.text << endl;
-            cout << "--------------------------" << endl;
+
+
+            //answer file name : quesIDans.txt ;
+            int quesID = QUES.quesID;
+
+            int counter = 0 ;
+            //number of characters of the quesID
+            for(;quesID > 0;){
+                quesID % 10 ;
+                quesID /= 10 ;
+                counter ++ ;
+            }
+
+            quesID = QUES.quesID ;
+            char ID[counter] ;
+            //getting the quesID but in characters
+            for(int i = 0 ; i < counter ; i++){
+                ID[i] = '0' + int(quesID % 10);
+                quesID /= 10 ;
+            }
+
+            //reverse the array
+            for(int i = 0 ; i < counter ; i++){
+                char holder ;
+                holder = ID[i] ;
+                ID[i] = ID[counter-1-i] ;
+                ID[counter - 1 - i] = holder ;
+                if(i == (counter-1-i))
+                    break;
+            }
+            string answerfile ;
+            for(int i = 0 ; i < counter ; i++){
+                answerfile += ID[i] ;
+            }
+
+            answerfile += "ans.txt" ;
+            fstream answerchecker(answerfile , ios::binary | ios::in);
+            if(answerchecker.fail() || answerchecker.bad()){
+                cout << i << ")Answer: NOT ANSWERED YET." << endl;
+                cout << "--------------------------" << endl;
+            }else{
+                string answerstream ;
+                getline(answerchecker , answerstream);
+                cout << i << ")Answer: " << answerstream << endl;
+            }
+            answerchecker.close();
     }
 
     //after that the user will choose the number of the question he wants to answer
@@ -590,6 +701,9 @@ int LOG2(char owner[]){
         cout << quesNUM << ")Question:" << QUES.text << endl;
         LOG2.close();
 
+
+
+
         //answer file name : quesIDans.txt ;
         int quesID = QUES.quesID;
 
@@ -633,16 +747,23 @@ int LOG2(char owner[]){
             return 22;
         }
 
-        LOG2.open(answerfile, ios::out | ios::app);
+        LOG2.open(answerfile, ios::out );
         LOG2 << answer << endl;
         LOG2.close();
 
         //setting the answered bit to true ( ANSWERED )
-        LOG2.open(ownerques , ios::binary | ios::out | ios::app);
+        //this overwrites the data in the file : will be removed in V.1.4.2
+        //either we will show the answer when asking the question
+        //by searching for the file name if found then the question is answered
+        //if not the question is not answered yet
+        //and edit the answer by overwriting it just for now
+        //later on the later versions we will add the thread and the ability of another users to answer
+
+       /* LOG2.open(ownerques , ios::binary | ios::out | ios::app);
         LOG2.seekg(pos,ios::beg);
         QUES.answered = true ;
         LOG2.write(reinterpret_cast<char*>(&QUES),sizeof(QUES));
-        LOG2.close();
+        LOG2.close();*/
         return 23;
     }
 }
@@ -659,7 +780,6 @@ LOG3ret LOG3(char owner[]){
     //after that delete the old file
     //then rename the new temporary file with the same old name
 
-    cout << "--------------------------" << endl;
     string OWNER = owner ;
     int ownersize = OWNER.length();
     string forshow = owner ;
@@ -671,7 +791,7 @@ LOG3ret LOG3(char owner[]){
     LOG3.seekg(0L , ios::end) ;
     quescounter = LOG3.tellg() / sizeof(QUES) ;
     int filesize = LOG3.tellg();
-    cout << "file size : " << filesize << endl;
+    //cout << "file size : " << filesize << endl;
     if(filesize == -1 || filesize == 0){//this means that there are no questions
         s.status = 31;
         return s ;
@@ -694,7 +814,52 @@ LOG3ret LOG3(char owner[]){
             cout << "Asked By:" << forshow << " to " << QUES.username << endl;
         }
         cout << i << ")Question:" << QUES.text << endl;
-        cout << "--------------------------" << endl;
+
+        //answer file name : quesIDans.txt ;
+        int quesID = QUES.quesID;
+
+        int counter = 0 ;
+        //number of characters of the quesID
+        for(;quesID > 0;){
+            quesID % 10 ;
+            quesID /= 10 ;
+            counter ++ ;
+        }
+
+        quesID = QUES.quesID ;
+        char ID[counter] ;
+        //getting the quesID but in characters
+        for(int i = 0 ; i < counter ; i++){
+            ID[i] = '0' + int(quesID % 10);
+            quesID /= 10 ;
+        }
+
+        //reverse the array
+        for(int i = 0 ; i < counter ; i++){
+            char holder ;
+            holder = ID[i] ;
+            ID[i] = ID[counter-1-i] ;
+            ID[counter - 1 - i] = holder ;
+            if(i == (counter-1-i))
+                break;
+        }
+        string answerfile ;
+        for(int i = 0 ; i < counter ; i++){
+            answerfile += ID[i] ;
+        }
+
+        answerfile += "ans.txt" ;
+        fstream answerchecker(answerfile , ios::binary | ios::in);
+        if(answerchecker.fail() || answerchecker.bad()){
+            cout << i << ")Answer: NOT ANSWERED YET." << endl;
+            cout << "--------------------------" << endl;
+        }else{
+            string answerstream ;
+            getline(answerchecker , answerstream);
+            cout << i << ")Answer: " << answerstream << endl;
+            cout << "--------------------------" << endl;
+        }
+        answerchecker.close();
     }
     LOG3.close();
 
@@ -761,11 +926,9 @@ LOG3ret LOG3(char owner[]){
         std::remove(OLDFILENAME);
         std::rename(OUTFILENAME , OLDFILENAME);
     }
+    s.status = 32;
     return s;
 }
-
-
-
 
 
 void askeddata(LOG3ret sholder){
@@ -812,6 +975,7 @@ void askeddata(LOG3ret sholder){
     for(int i = 0 ; i < userNAMEcounter ; i++){
         finalarray[i] = userNAMEfile[i] ;
     }
+
     finalarray[userNAMEcounter] = 'a' ;
     finalarray[userNAMEcounter+1] = 's' ;
     finalarray[userNAMEcounter+2] = 'k' ;
@@ -820,16 +984,19 @@ void askeddata(LOG3ret sholder){
     finalarray[userNAMEcounter+5] = 'x' ;
     finalarray[userNAMEcounter+6] = 't' ;
 
-    /*for(char outputer : finalarray)
+    system("cls");
+    for(char outputer : finalarray)
         cout << outputer ;
     cout << endl ;
     for(char outputer : OUT)
         cout << outputer ;
-    cout << endl;*/
+    cout << endl;
+    system("cls");
 
 
     askeddatastream.close();
     outer.close();
+
 
     std::remove(finalarray);
     std::rename(OUT,finalarray);
@@ -840,57 +1007,54 @@ void askeddata(LOG3ret sholder){
 
 
 
-void asked(int quesIDholder , string userNAMEholder , int userNAMEcounter , char userNAMEfile[]){
+void answerdelete(int  ansID){
+    int quesID = ansID;
 
-    fstream INPUT ;
-    fstream OUTPUT ;
-    int quescounter = 0 ;
-    char OUTFILENAMEE[] = "tem.txt" ;
-    string outfilenamee = "tem.txt" ;
-    string askedpersonfile = userNAMEholder ;
-    askedpersonfile += "ask.txt" ;
-    cout << "askedpersonfile : " << askedpersonfile << endl;
-    INPUT.open(askedpersonfile , ios::binary | ios::in );
-    OUTPUT.open(outfilenamee , ios::binary | ios::out | ios::app);
-    INPUT.seekg(0L , ios::end) ;
-    quescounter = INPUT.tellg() / sizeof(QUES) ;
-    cout << "quescounter : " << quescounter << endl;
-    INPUT.seekg(0L , ios::beg) ;
-    for(int i = 0 ; i < quescounter ; i++){
-        long pos = 0 ;
-        pos = ( i * (sizeof(QUES)) );
-        INPUT.seekg(pos , ios::beg);
-        INPUT.read(reinterpret_cast<char*>(&QUES) , sizeof(QUES));
-        if(QUES.quesID == quesIDholder)
-            continue;
-        OUTPUT.write(reinterpret_cast<char*>(&QUES) , sizeof(QUES));
+    int counter = 0 ;
+    //number of characters of the quesID
+    for(;quesID > 0;){
+        quesID % 10 ;
+        quesID /= 10 ;
+        counter ++ ;
     }
-    //now we want to rename temp.txt and delete askeduserask.txt
 
-    int finalsize = userNAMEcounter + 7 ;
-    char finalarray[finalsize] ;
+    quesID = ansID ;
 
-    for(int i = 0 ; i < userNAMEcounter ; i++){
-        finalarray[i] = userNAMEfile[i] ;
+    char ID[counter]  ;
+
+    //getting the quesID but in characters
+    for(int i = 0 ; i < counter ; i++){
+        ID[i] = '0' + int(quesID % 10);
+        quesID /= 10 ;
     }
-    finalarray[userNAMEcounter] = 'a' ;
-    finalarray[userNAMEcounter+1] = 's' ;
-    finalarray[userNAMEcounter+2] = 'k' ;
-    finalarray[userNAMEcounter+3] = '.' ;
-    finalarray[userNAMEcounter+4] = 't' ;
-    finalarray[userNAMEcounter+5] = 'x' ;
-    finalarray[userNAMEcounter+6] = 't' ;
 
+    //reverse the array
+    for(int i = 0 ; i < counter ; i++){
+        char holder ;
+        holder = ID[i] ;
+        ID[i] = ID[counter-1-i] ;
+        ID[counter - 1 - i] = holder ;
+        if(i == (counter-1-i)) {
+            break;
+        }
+    }
 
+    counter += 7 ;// a n s . t x t = 7 characters
+    char FINAL[counter] ;
 
+    int fortheloop = (counter - 7) ;
+    for(int i = 0 ; i < fortheloop ; i++){
+        FINAL[i] = ID[i];
+    }
 
-    INPUT.close();
-    OUTPUT.close();
-
-
-    std::remove(finalarray);
-    std::rename(OUTFILENAMEE,finalarray);
+    char extension[7] = {'a' , 'n' , 's' , '.' , 't' , 'x' , 't'};
+    for(int i = fortheloop , j = 0 ; i < counter && j < 7 ; i++ , j++){
+        FINAL[i] = extension[j] ;
+    }
+    std::remove(FINAL);
 }
+
+
 
 
 int main(){
@@ -910,12 +1074,6 @@ for(;;){
         LOGsignal = LOGmenu(status);
     }while( (LOGsignal != 9) ) ;
 }
-
-
-
-
-
-
 
 
 
