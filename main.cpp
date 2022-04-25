@@ -400,13 +400,14 @@ int LOGmenu(retstatus LOGstruct){
                 cout << "THERE ARE NO QUESTIONS TO DELETE." << endl;
                 cout << "---------------------------------" << endl;
             }else if(LOGMM.status == 30){
-                //system("cls");
+                system("cls");
                 cout << "----------------------" << endl;
                 cout << "BACK TO OPERATION MENU" << endl;
                 cout << "----------------------" << endl;
             }else if(LOGMM.status == 32){
                 askeddata(LOGMM);
                 answerdelete(LOGMM.ID);
+                system("cls");
                 cout << "------------------------------" << endl;
                 cout << "QUESTION DELETED SUCCESSFULLY." << endl;
                 cout << "------------------------------" << endl;
@@ -574,6 +575,65 @@ int LOG1(char owner[]){
 }
 
 
+
+string int2str(int input){
+
+    int inputLEN ;
+    int inputHOLDER = input ;
+    string inputSTR ;
+    while( inputHOLDER != 0 ){
+        inputSTR += ( '0' + ( inputHOLDER % 10 ) ) ;
+        inputHOLDER /= 10 ;
+        inputLEN++ ;
+    }
+
+    //now we want to reverse the string
+    for(int i = 0 ; i < inputLEN ; i++){
+
+        if( i > (inputLEN - 1 - i) ){
+            break ;
+        }
+
+        char holder ;
+        holder = inputSTR[i] ;
+        inputSTR[i] = inputSTR[(inputLEN - 1 - i)] ;
+        inputSTR[(inputLEN - 1 - i)] = holder ;
+    }
+
+    return inputSTR;
+}
+
+
+int str2int(string holder){
+    int intSIZE = holder.length();
+    int numRET = 0 ;
+    int adder = 0 ;
+
+    //what if the first element of the string is - sign
+
+    if(holder[0] == '-'){
+        //this means that the number is negative
+        numRET = holder[1] - '0' ;
+        for(int i = 2 ; i < intSIZE ; i++ ){
+            adder = holder[i] - '0' ;
+            numRET = ( (numRET * 10) + adder ) ;
+        }
+        numRET *= -1 ;
+    }else{
+        numRET = holder[0] - '0' ;
+        for(int i = 1 ; i < intSIZE ; i++ ){
+            adder = holder[i] - '0' ;
+            numRET = ( (numRET * 10) + adder ) ;
+        }
+    }
+    return numRET ;
+}
+
+
+
+
+
+
 int LOG2(char owner[]){
     // this function will show the questions to the user first
     //first we want to open the file of the questions for the owner
@@ -588,7 +648,8 @@ int LOG2(char owner[]){
 
     int sizechecker = LOG2.tellg();
 
-    if(sizechecker == -1){
+    cout << "sizechecker : " << sizechecker << endl;
+    if(sizechecker == -1 || sizechecker == 0){
         return 21 ;
     }
 
@@ -676,18 +737,28 @@ int LOG2(char owner[]){
         return 20;
     }else if(flow == 'c' || flow == 'C'){
 
+        //we will take the input as integer and then convert it with string
+        //just in case if the user entered a character
         cout << "Enter the number of the question you want to answer : " ;
         int quesNUM ;
-        cin >> quesNUM ;
-        cin.ignore(100,'\n');
-        while(quesNUM >= quescounter || quesNUM < 0){
+        string quesNUMSTR ;
+        string quescounterSTR ;
+        getline(cin,quesNUMSTR) ;
+
+        //quesNUMSTR = int2str(quesNUM) ;
+        quescounterSTR = int2str(quescounter) ;
+
+        while ( ( ( quesNUMSTR < "0" ) || (quesNUMSTR >= quescounterSTR ) ) ){
             cout << "ENTER A VALID INPUT : " ;
-            cin >> quesNUM ;
-            cin.ignore(100,'\n');
+            getline(cin,quesNUMSTR) ;
+            //string quesNUMSTR = int2str(quesNUM) ;
         }
+
+        quesNUM = str2int(quesNUMSTR) ;
+
         //now after knowing the number of the question we will get it again on the screen and let him put the answer
 
-        system("cls");
+
         cout << "[0] Back to questions menu." << endl;
         cout << "-------------------------" << endl;
         long pos = ( quesNUM * (sizeof(QUES)) ) ;
@@ -867,14 +938,21 @@ LOG3ret LOG3(char owner[]){
     //after that the user choose either to go back or input number
     cout << "[-1] To go back to operations menu." << endl;
     cout << "Enter the number of the question you want to delete : " ;
+
     int choice ;
-    cin >> choice ;
-    cin.ignore(100,'\n');
-    while( (choice >= quescounter ) || ( (choice < 0) && (choice != -1) ) ){
+    string quesNUMSTR ;
+    string quescounterSTR ;
+    getline(cin,quesNUMSTR) ;
+
+    //quesNUMSTR = int2str(quesNUM) ;
+    quescounterSTR = int2str(quescounter) ;
+
+
+    while( (quesNUMSTR >= quescounterSTR ) || ( (quesNUMSTR < "0") && (quesNUMSTR != "-1") ) ){
         cout << "ENTER A VALID INPUT : " ;
-        cin >> choice ;
-        cin.ignore(100,'\n');
+        getline(cin,quesNUMSTR);
     }
+    choice = str2int(quesNUMSTR) ;
 
     if(choice == -1){
         s.status = 30 ;
@@ -929,6 +1007,7 @@ LOG3ret LOG3(char owner[]){
     s.status = 32;
     return s;
 }
+
 
 
 void askeddata(LOG3ret sholder){
@@ -1074,6 +1153,7 @@ for(;;){
         LOGsignal = LOGmenu(status);
     }while( (LOGsignal != 9) ) ;
 }
+
 
 
 
