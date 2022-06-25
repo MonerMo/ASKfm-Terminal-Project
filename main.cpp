@@ -1,3 +1,6 @@
+// ~Written by Gilfoyle <3
+
+
 #include <bits/stdc++.h>
 #include <conio.h>
 #include <cstdio>
@@ -18,7 +21,6 @@ const int OLDFILESIZE = 100;
 static bool firstlogin ;
 int LOG1(char owner[]) ;
 int LOG2(char owner[]) ;
-//void asked(int quesIDholder , string userNAMEholder , int userNAMEcounter , char userNAMEfile[]);
 struct LOG3ret{
     string filename ;
     int ID ;
@@ -326,13 +328,13 @@ retstatus startup(){
     cout << "--------------Welcome to neighbours forum--------------" << "\n \n" ;
     cout << "1:SIGN UP" << "\n" << "2:LOG IN" << "\n" << "3:TERMINATE PROGRAM" << "\n" ;
     cout << "Enter 1 , 2 or 3 depend on your choice : " ;
-    cin.get(MMCHOICE);
-    cin.ignore(100,'\n');
+    MMCHOICE = _getch();
+    //cin.ignore(100,'\n');
 
     while( ( MMCHOICE != '1' ) && ( MMCHOICE != '2') && ( MMCHOICE != '3' )){
-        cout << "Please Enter a valid input : " ;
-        cin.get(MMCHOICE);
-        cin.ignore(100 , '\n');
+        cout << endl <<"Please Enter a valid input : " ;
+        MMCHOICE = _getch();
+        //cin.ignore(100 , '\n');
     }
 
     retstatus MMstatus  ;
@@ -370,6 +372,7 @@ int LOGmenu(retstatus LOGstruct){
             usernameholder[i] = USERcheck.username[i] ;
         }
     }
+
     cout << "CHOOSE THE OPERATION YOU WANT TO MAKE" << endl;
     cout << "0 : LOG OUT.\n"
          << "1 : ASK A QUESTION TO USER.\n"
@@ -378,12 +381,12 @@ int LOGmenu(retstatus LOGstruct){
 
     int signal ;
     char LOGMMCHOICE ;
-    LOGMMCHOICE = cin.get();
-    cin.ignore(100,'\n');
+    LOGMMCHOICE = _getch();
+    //cin.ignore(100,'\n');
     while( (LOGMMCHOICE != '0') && (LOGMMCHOICE != '1') && (LOGMMCHOICE != '2') && (LOGMMCHOICE != '3')){
         cout << "PLEASE ENTER A VALID INPUT : " ;
-        LOGMMCHOICE = cin.get();
-        cin.ignore(100,'\n');
+        LOGMMCHOICE = _getch();
+        //cin.ignore(100,'\n');
     }
 
     LOG3ret LOGMM ;
@@ -434,6 +437,7 @@ int LOGmenu(retstatus LOGstruct){
             }while(signal == 22);
 
             if(signal == 20){
+                system("cls");
                 cout << "-----------------------" << endl;
                 cout << "BACK TO OPERATION MENU." << endl;
                 cout << "-----------------------" << endl;
@@ -491,8 +495,10 @@ int LOG1(char owner[]){
 
     //now make a string called ownerQUES.txt
     string ownerques = owner ;
+
     //string ownermain for not asking the logged in person ;
     string ownermain = owner ;
+
     ownerques += "ques.txt" ;
 
 
@@ -525,8 +531,9 @@ int LOG1(char owner[]){
     if(LOG1struct.anonymousstatus == 'y' || LOG1struct.anonymousstatus == 'Y'){
         cout << "USER ACCEPTS ANONYMOUS QUESTIONS." << endl;
         cout << "DO YOU WANT TO SEND ANONYMOUS QUESTION ( 'y' for yes , 'n' for no ) : " ;
-        QUES.anonymous = getchar();
-        cin.ignore();
+        QUES.anonymous = _getch(); _putch(QUES.anonymous);
+
+        //cin.ignore();
     }else if(LOG1struct.anonymousstatus == 'n' || LOG1struct.anonymousstatus == 'N'){
         cout << "USER DOESN'T ACCEPT ANONYMOUS QUESTIONS." << endl;
         QUES.anonymous = 'n' ;
@@ -536,7 +543,7 @@ int LOG1(char owner[]){
 
 
 
-    cout << "QUESTION : " ;
+    cout << endl << "QUESTION : " ;
     cin.getline(QUES.text,TEXTLENGTH);
 
     //making question ID
@@ -603,7 +610,6 @@ string int2str(int input){
     return inputSTR;
 }
 
-
 int str2int(string holder){
     int intSIZE = holder.length();
     int numRET = 0 ;
@@ -619,7 +625,7 @@ int str2int(string holder){
             numRET = ( (numRET * 10) + adder ) ;
         }
         numRET *= -1 ;
-    }else{
+    }else{ //holder[0] = 'a' = 97 , '0' = 48 => 49
         numRET = holder[0] - '0' ;
         for(int i = 1 ; i < intSIZE ; i++ ){
             adder = holder[i] - '0' ;
@@ -648,7 +654,7 @@ int LOG2(char owner[]){
 
     int sizechecker = LOG2.tellg();
 
-    cout << "sizechecker : " << sizechecker << endl;
+    //cout << "sizechecker : " << sizechecker << endl;
     if(sizechecker == -1 || sizechecker == 0){
         return 21 ;
     }
@@ -716,6 +722,7 @@ int LOG2(char owner[]){
                 string answerstream ;
                 getline(answerchecker , answerstream);
                 cout << i << ")Answer: " << answerstream << endl;
+                cout << "--------------------------" << endl;
             }
             answerchecker.close();
     }
@@ -724,13 +731,13 @@ int LOG2(char owner[]){
     //adding a back button here for 99 value (in the future)
     cout << "------- [B]ack to operation menu or [C]ontinue -------" << endl;
     cout << "------------------------------------------------------" << endl;
-    char flow = cin.get();
-    cin.ignore(100 , '\n');
+    char flow = _getch();
+    //cin.ignore(100 , '\n');
 
     while((flow != 'b') && ( flow != 'B') && (flow != 'c' ) && ( flow != 'C')){
-        cout << "ENTER A VALID INPUT : " ;
-        flow = cin.get();
-        cin.ignore(100 , '\n') ;
+        cout << endl <<"ENTER A VALID INPUT : " ;
+        flow = _getch() ;
+        //cin.ignore(100 , '\n') ;
     }
 
     if(flow == 'b' || flow == 'B'){
@@ -745,13 +752,37 @@ int LOG2(char owner[]){
         string quescounterSTR ;
         getline(cin,quesNUMSTR) ;
 
-        //quesNUMSTR = int2str(quesNUM) ;
+        bool notintsignal = true;
+        int notimposter = 0 ;
+
+
+        while(notintsignal){
+
+            for(int i = 0 ; i < quesNUMSTR.size() ; i++){
+                if(quesNUMSTR[i] >= '0' && quesNUMSTR[i] <= '9'){
+                    notimposter++;
+                }
+            }
+
+            if(notimposter == quesNUMSTR.size()){
+                notintsignal = false;
+                break;
+            }else{
+                cout << "ENTER A VALID INPUT : " ;
+                getline(cin,quesNUMSTR) ;
+                notimposter = 0 ;
+            }
+        }
+
+
+
         quescounterSTR = int2str(quescounter) ;
 
-        while ( ( ( quesNUMSTR < "0" ) || (quesNUMSTR >= quescounterSTR ) ) ){
+
+        while ( (str2int(quesNUMSTR) >= str2int(quescounterSTR) ) || (str2int(quesNUMSTR) < 0 ) ){
             cout << "ENTER A VALID INPUT : " ;
             getline(cin,quesNUMSTR) ;
-            //string quesNUMSTR = int2str(quesNUM) ;
+            string quesNUMSTR = int2str(quesNUM) ;
         }
 
         quesNUM = str2int(quesNUMSTR) ;
@@ -948,7 +979,35 @@ LOG3ret LOG3(char owner[]){
     quescounterSTR = int2str(quescounter) ;
 
 
-    while( (quesNUMSTR >= quescounterSTR ) || ( (quesNUMSTR < "0") && (quesNUMSTR != "-1") ) ){
+    bool notintsignal = true;
+    int notimposter = 0 ;
+
+
+    while(notintsignal){
+
+        if(quesNUMSTR[0] == '-' && quesNUMSTR[1] == '1' && quesNUMSTR.size() == 2){
+            break ;
+        }
+
+        for(int i = 0 ; i < quesNUMSTR.size() ; i++){
+            if(quesNUMSTR[i] >= '0' && quesNUMSTR[i] <= '9'){
+                notimposter++;
+            }
+        }
+
+        if(notimposter == quesNUMSTR.size()){
+            notintsignal = false;
+            break;
+        }else{
+            cout << "ENTER A VALID INPUT~: " ;
+            getline(cin,quesNUMSTR) ;
+            notimposter = 0 ;
+        }
+    }
+
+
+
+    while( (str2int(quesNUMSTR) >= str2int(quescounterSTR) ) || ( ((str2int(quesNUMSTR) < 0) && (str2int(quesNUMSTR) != -1)) ) ){
         cout << "ENTER A VALID INPUT : " ;
         getline(cin,quesNUMSTR);
     }
@@ -1081,7 +1140,6 @@ void askeddata(LOG3ret sholder){
     std::rename(OUT,finalarray);
 
     //asked(quesIDholder , userNAMEholder , userNAMEcounter , userNAMEfile);
-
 }
 
 
@@ -1133,6 +1191,13 @@ void answerdelete(int  ansID){
     std::remove(FINAL);
 }
 
+//note here that we may add later
+//follow feature
+//feed feature
+//show user profile feature
+//edit profile data ( password - email )
+
+
 
 
 
@@ -1153,6 +1218,7 @@ for(;;){
         LOGsignal = LOGmenu(status);
     }while( (LOGsignal != 9) ) ;
 }
+
 
 
 
