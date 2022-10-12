@@ -18,4 +18,4 @@ link to a video where I am using the program :film_strip: .
 ![A4 Paper :](https://i.imgur.com/mc8NHG4.jpg) 
 
 **Link to youtube video demonstration :** :film_strip:
-![IMAGE ALT TEXT HERE](https://youtu.be/j_FnTEgwqOg)
+[![IMAGE ALT TEXT HERE](https://i.imgur.com/rJUULNz.png)](https://youtu.be/j_FnTEgwqOg)
